@@ -1,0 +1,39 @@
+{
+  "project_info": {
+    "project_number": "691009956952",
+    "project_id": "community-boating-center",
+    "storage_bucket": "community-boating-center.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:691009956952:android:92927dfb9e6c88ef126e2d",
+        "android_client_info": {
+          "package_name": "com.example.app"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "691009956952-ea7p34u8ntt6oi3uh1oeu90ubarlc5kf.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyD0wACHeMc11qPlzO_Cb2QkzrCkmdDRdXk"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "691009956952-ea7p34u8ntt6oi3uh1oeu90ubarlc5kf.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
