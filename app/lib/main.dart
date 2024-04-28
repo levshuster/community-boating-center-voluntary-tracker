@@ -67,13 +67,16 @@ class _MyHomePageState extends State<MyHomePage> {
       // called again, and so nothing would appear to happen.
       _counter++;
 
+      // TODO: Throwing an error
       LocationService loc = LocationService();
       loc.getCurrentLocation().then((locationData) {
         print('Location: ${locationData.latitude}, ${locationData.longitude}');
         
         FirebaseFirestore db = FirebaseFirestore.instance;
-        final test = <String, String> {'test': 'test',
-        'country': 'USA'};
+        final test = <String, String> {
+          'test': 'test',
+          'country': 'USA'
+        };
         db.collection('Location').add(test).then((value) {
           print('Location added to Firestore');
         });
