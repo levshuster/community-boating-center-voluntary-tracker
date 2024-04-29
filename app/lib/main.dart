@@ -4,21 +4,20 @@ import 'firebase_options.dart';
 import 'location_services.dart';
 /* Currently used in location_services.dart:
   * import 'package:firebase_auth/firebase_auth.dart';
-  * import 'package:cloud_firestore/cloud_firestore.dart'; 
+  * import 'package:cloud_firestore/cloud_firestore.dart';
 */
 
 
 /*
-  + NECESSARY: 
+  + NECESSARY:
   * We need to ensure we spin up the DB when we go to grab location.
   * Perhaps we can do this in the background, but for now we'll just do it here.
 */
-
 /// Flutter code sample for [Scaffold].
 
 void main() async {
   /*
-    + NECESSARY: 
+    + NECESSARY:
     * We need to ensure we spin up the DB when we go to grab location.
     * Perhaps we can do this in the background, but for now we'll just do it here.
   */
@@ -63,12 +62,13 @@ class _ScaffoldExampleState extends State<ScaffoldExample> {
         shape: const CircularNotchedRectangle(),
         child: Container(height: 50.0),
       ),
-      floatingActionButton: FloatingActionButton(
+      floatingActionButton: FloatingActionButton.extended(
         onPressed: () => setState(() {
           _count++;
         }),
-        tooltip: 'Increment Counter',
-        child: const Icon(Icons.navigation),
+        tooltip: 'Start Trip',
+        label: const Text('Start Trip'),
+        icon: const Icon(Icons.navigation),
       ),
       floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
     );
