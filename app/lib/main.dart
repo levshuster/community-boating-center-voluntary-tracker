@@ -3,12 +3,14 @@ import 'package:location/location.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'firebase_options.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+
+/*
+  + NECESSARY: 
+  * We need to ensure we spin up the DB when we go to grab location.
+  * Perhaps we can do this in the background, but for now we'll just do it here.
+*/
 void main() async {
-  /*
-    + NECESSARY: 
-    * We need to ensure we spin up the DB when we go to grab location.
-    * Perhaps we can do this in the background, but for now we'll just do it here.
-  */
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,
@@ -18,6 +20,7 @@ void main() async {
 
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
+  
 
   // This widget is the root of your application.
   @override
@@ -78,15 +81,24 @@ class _MyHomePageState extends State<MyHomePage> {
       // called again, and so nothing would appear to happen.
       _counter++;
 
-      // TODO: Throwing an error
+      //* Get the locations of all other boats:
+      print("Locations of all other boats:");
+      FirebaseFirestore db = FirebaseFirestore.instance;
+      db.collection('testing').get().then((value) { //! FOR DEBUG ONLY
+        for (int i = 0; i < value.docs.length; i++) {
+          GeoPoint dat = value.docs[i].data()['location'];
+          print(dat.latitude.toString() + ", " + dat.longitude.toString());
+        }
+      });
+
+      //* Get your location, then send it to our database:
       LocationService loc = LocationService();
       loc.getCurrentLocation().then((locDat) {
-        
         FirebaseFirestore db = FirebaseFirestore.instance;        
         Map<String, dynamic> test = {
           'location': GeoPoint(locDat.latitude!, locDat.longitude!),
           'timestamp': FieldValue.serverTimestamp(),
-          'user': 'test'          
+          'user': 'test' // TODO: Make a unique ID system (Google Auth?)        
         };
         db.collection('Location')
             .add(test)
@@ -94,7 +106,6 @@ class _MyHomePageState extends State<MyHomePage> {
       }).catchError((e) {
         print('Error: $e');
       });
-
     });
   }
 
@@ -154,6 +165,7 @@ class _MyHomePageState extends State<MyHomePage> {
   }
 }
 
+// Returns location:
 class LocationService {
   Location location = Location();
 
