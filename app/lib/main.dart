@@ -1,8 +1,33 @@
 import 'package:flutter/material.dart';
+import 'package:firebase_core/firebase_core.dart';
+import 'firebase_options.dart';
+import 'location_services.dart';
+/* Currently used in location_services.dart:
+  * import 'package:firebase_auth/firebase_auth.dart';
+  * import 'package:cloud_firestore/cloud_firestore.dart'; 
+*/
+
+
+/*
+  + NECESSARY: 
+  * We need to ensure we spin up the DB when we go to grab location.
+  * Perhaps we can do this in the background, but for now we'll just do it here.
+*/
 
 /// Flutter code sample for [Scaffold].
 
-void main() => runApp(const ScaffoldExampleApp());
+void main() async {
+  /*
+    + NECESSARY: 
+    * We need to ensure we spin up the DB when we go to grab location.
+    * Perhaps we can do this in the background, but for now we'll just do it here.
+  */
+  WidgetsFlutterBinding.ensureInitialized();
+  await Firebase.initializeApp(
+    options: DefaultFirebaseOptions.currentPlatform,
+  );
+  runApp(const ScaffoldExampleApp());
+}
 
 class ScaffoldExampleApp extends StatelessWidget {
   const ScaffoldExampleApp({super.key});
