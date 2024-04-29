@@ -1,7 +1,18 @@
 import 'package:flutter/material.dart';
 import 'package:location/location.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-void main() {
+import 'package:firebase_core/firebase_core.dart';
+import 'firebase_options.dart';
+void main() async {
+  /*
+    + NECESSARY: 
+    * We need to ensure we spin up the DB when we go to grab location.
+    * Perhaps we can do this in the background, but for now we'll just do it here.
+  */
+  WidgetsFlutterBinding.ensureInitialized();
+  await Firebase.initializeApp(
+    options: DefaultFirebaseOptions.currentPlatform,
+  );
   runApp(const MyApp());
 }
 
@@ -69,18 +80,17 @@ class _MyHomePageState extends State<MyHomePage> {
 
       // TODO: Throwing an error
       LocationService loc = LocationService();
-      loc.getCurrentLocation().then((locationData) {
-        print('Location: ${locationData.latitude}, ${locationData.longitude}');
+      loc.getCurrentLocation().then((locDat) {
         
-        FirebaseFirestore db = FirebaseFirestore.instance;
-        final test = <String, String> {
-          'test': 'test',
-          'country': 'USA'
+        FirebaseFirestore db = FirebaseFirestore.instance;        
+        Map<String, dynamic> test = {
+          'location': GeoPoint(locDat.latitude!, locDat.longitude!),
+          'timestamp': FieldValue.serverTimestamp(),
+          'user': 'test'          
         };
-        db.collection('Location').add(test).then((value) {
-          print('Location added to Firestore');
-        });
-        
+        db.collection('Location')
+            .add(test)
+            .then((value) => print('Location ${[locDat.latitude!, locDat.longitude!]} added'));  
       }).catchError((e) {
         print('Error: $e');
       });
