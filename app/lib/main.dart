@@ -59,17 +59,7 @@ class _ScaffoldExampleState extends State<ScaffoldExample> {
       urlTemplate: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
       userAgentPackageName: 'com.example.app',
     );
-    // Polyline for the path we've taken:
-    List<LatLng> points = [];
-    PolylineLayer polylineLayer = PolylineLayer(
-      polylines: [
-        Polyline(
-          points: points,
-          strokeWidth: 4.0,
-          color: Colors.blue,
-        ),
-      ],
-    );
+    // Marker layer: [<home>, <current location>]
     List<Marker> markers = [
       const Marker(
           width: 80.0,
@@ -95,8 +85,7 @@ class _ScaffoldExampleState extends State<ScaffoldExample> {
           mapController: MapController(),
           children: [
             tileLayer,
-            markerLayer,
-            polylineLayer
+            markerLayer
           ],
         );
     
@@ -104,24 +93,26 @@ class _ScaffoldExampleState extends State<ScaffoldExample> {
     LocationService locationService = LocationService();
     bool tracking = false;
     // Timer:
-    Timer locationTracker = Timer.periodic(const Duration(seconds: 20), (timer) async {
+    Timer locationTracker = Timer.periodic(const Duration(seconds: 5), (timer) async {
         // Get our location:
         final locationData = await locationService.getCurrentLocation();
         // center ourselves on the map:
         LatLng point = LatLng(locationData.latitude!, locationData.longitude!);
-        flutterMap.mapController?.move(point, 16.0);
-        // If we're tracking, add our trip to the map.
+        flutterMap.mapController?.move(point, flutterMap.mapController?.camera.zoom ?? 16.0); //! Do we want to force a cameramove?
+        // Add our current location to the map:
+        markers.removeLast();
+        markers.add(
+          Marker(
+            point: point,
+            child: const Icon(Icons.location_on, size: 50.0, color: Colors.red)
+          )
+        );
+        // Add our current location to the path and send to the server if tracking:
+        print("tracking: " + tracking.toString());
         if (tracking) {
-          markers.removeLast();
-          markers.add(
-            Marker(
-              point: point,
-              child: const Icon(Icons.location_on, size: 50.0, color: Colors.red)
-            )
-          );
-          points.add(point);
+          // TODO: Why is 'tracking' not being consistent?
           // Send our location to the server:
-          // locationService.sendLocationToServer('TestID', LatLng(locationData.latitude!, locationData.longitude!));
+          locationService.sendLocationToServer('TestID', LatLng(locationData.latitude!, locationData.longitude!));
         }
       });
 
@@ -138,14 +129,14 @@ class _ScaffoldExampleState extends State<ScaffoldExample> {
       ),
       floatingActionButton: FloatingActionButton.extended(  
         onPressed: () => setState(() {
+          tracking = !tracking;
           // Start Trip:
           if (!tracking) {
-            // change button color and icon, and allow server queries.
+            // change button color and icon.
           }
           // End trip:
           else {
           }
-          tracking = !tracking;
         }),
         tooltip: 'Start Trip',
         label: const Text('Start Trip'),
