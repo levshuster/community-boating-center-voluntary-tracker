@@ -1,3 +1,4 @@
+import 'package:latlong2/latlong.dart';
 import 'package:location/location.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 
@@ -25,20 +26,15 @@ class LocationService {
   return locationData;
   }
 
-  void sendLocationToServer(String id) async {
+  void sendLocationToServer(String id, LatLng locDat) async {
     //* Get our location, then send it to our database:
-    getCurrentLocation().then((locDat) {
-      FirebaseFirestore db = FirebaseFirestore.instance;        
       Map<String, dynamic> test = {
-        'location': GeoPoint(locDat.latitude!, locDat.longitude!),
+        'location': GeoPoint(locDat.latitude, locDat.longitude),
         'timestamp': FieldValue.serverTimestamp(),
         'user': id
       };
-      db.collection('Location')
+      FirebaseFirestore.instance.collection('Location')
           .add(test)
-          .then((value) => print('Location ${[locDat.latitude!, locDat.longitude!]} added'));  
-    }).catchError((e) {
-      print('Error: $e');
-    });
+          .then((value) => print('Location ${[locDat.latitude, locDat.longitude]} added'));  
   }
 }

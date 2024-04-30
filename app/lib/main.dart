@@ -1,8 +1,11 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'firebase_options.dart';
 import 'location_services.dart';
 import 'package:flutter_map/flutter_map.dart';
+import 'package:flutter_map_cancellable_tile_provider/flutter_map_cancellable_tile_provider.dart';
 import 'package:latlong2/latlong.dart';
 /* Currently used in location_services.dart:
   * import 'package:firebase_auth/firebase_auth.dart';
@@ -18,11 +21,6 @@ import 'package:latlong2/latlong.dart';
 /// Flutter code sample for [Scaffold].
 
 void main() async {
-  /*
-    + NECESSARY:
-    * We need to ensure we spin up the DB when we go to grab location.
-    * Perhaps we can do this in the background, but for now we'll just do it here.
-  */
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,
@@ -61,25 +59,71 @@ class _ScaffoldExampleState extends State<ScaffoldExample> {
       urlTemplate: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
       userAgentPackageName: 'com.example.app',
     );
-    // Marker layer represents the location we're at.
-    const MarkerLayer markerLayer = MarkerLayer(
-      markers: [
-        Marker(
+    // Polyline for the path we've taken:
+    List<LatLng> points = [];
+    PolylineLayer polylineLayer = PolylineLayer(
+      polylines: [
+        Polyline(
+          points: points,
+          strokeWidth: 4.0,
+          color: Colors.blue,
+        ),
+      ],
+    );
+    List<Marker> markers = [
+      const Marker(
           width: 80.0,
           height: 80.0,
           point: LatLng(48.7216016,-122.5094043),
           child: Icon(Icons.location_on, size: 50.0, color: Colors.red),
         ),
-      ],
+        const Marker(
+          width: 80.0,
+          height: 80.0,
+          point: LatLng(48.7216016,-122.5094043),
+          child: Icon(Icons.location_on, size: 50.0, color: Colors.red),
+        )
+    ];
+
+    // Marker layer represents the location we're at.
+    MarkerLayer markerLayer = MarkerLayer(
+      markers: markers,
     );
     // Map layer:
     FlutterMap flutterMap = FlutterMap(
           options: mapOptions,
+          mapController: MapController(),
           children: [
             tileLayer,
             markerLayer,
-          ]
+            polylineLayer
+          ],
         );
+    
+    // Location services for tracking our location:
+    LocationService locationService = LocationService();
+    bool tracking = false;
+    // Timer:
+    Timer locationTracker = Timer.periodic(const Duration(seconds: 20), (timer) async {
+        // Get our location:
+        final locationData = await locationService.getCurrentLocation();
+        // center ourselves on the map:
+        LatLng point = LatLng(locationData.latitude!, locationData.longitude!);
+        flutterMap.mapController?.move(point, 16.0);
+        // If we're tracking, add our trip to the map.
+        if (tracking) {
+          markers.removeLast();
+          markers.add(
+            Marker(
+              point: point,
+              child: const Icon(Icons.location_on, size: 50.0, color: Colors.red)
+            )
+          );
+          points.add(point);
+          // Send our location to the server:
+          // locationService.sendLocationToServer('TestID', LatLng(locationData.latitude!, locationData.longitude!));
+        }
+      });
 
     return Scaffold(
       appBar: AppBar(
@@ -92,9 +136,16 @@ class _ScaffoldExampleState extends State<ScaffoldExample> {
         shape: const CircularNotchedRectangle(),
         child: Container(height: 50.0),
       ),
-      floatingActionButton: FloatingActionButton.extended(
+      floatingActionButton: FloatingActionButton.extended(  
         onPressed: () => setState(() {
-          //! Start Trip!
+          // Start Trip:
+          if (!tracking) {
+            // change button color and icon, and allow server queries.
+          }
+          // End trip:
+          else {
+          }
+          tracking = !tracking;
         }),
         tooltip: 'Start Trip',
         label: const Text('Start Trip'),
