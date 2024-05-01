@@ -5,7 +5,7 @@ import 'package:firebase_core/firebase_core.dart';
 import 'firebase_options.dart';
 import 'location_services.dart';
 import 'package:flutter_map/flutter_map.dart';
-import 'package:flutter_map_cancellable_tile_provider/flutter_map_cancellable_tile_provider.dart';
+// import 'package:flutter_map_cancellable_tile_provider/flutter_map_cancellable_tile_provider.dart';
 import 'package:latlong2/latlong.dart';
 /* Currently used in location_services.dart:
   * import 'package:firebase_auth/firebase_auth.dart';
@@ -25,28 +25,28 @@ void main() async {
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,
   );
-  runApp(const ScaffoldExampleApp());
+  runApp(const CommunityBoatingTrackerApp());
 }
 
-class ScaffoldExampleApp extends StatelessWidget {
-  const ScaffoldExampleApp({super.key});
+class CommunityBoatingTrackerApp extends StatelessWidget {
+  const CommunityBoatingTrackerApp({super.key});
 
   @override
   Widget build(BuildContext context) {
     return const MaterialApp(
-      home: ScaffoldExample(),
+      home: CommunityBoatingTracker(),
     );
   }
 }
 
-class ScaffoldExample extends StatefulWidget {
-  const ScaffoldExample({super.key});
+class CommunityBoatingTracker extends StatefulWidget {
+  const CommunityBoatingTracker({super.key});
 
   @override
-  State<ScaffoldExample> createState() => _ScaffoldExampleState();
+  State<CommunityBoatingTracker> createState() => _CommunityBoatingTrackerState();
 }
 
-class _ScaffoldExampleState extends State<ScaffoldExample> {
+class _CommunityBoatingTrackerState extends State<CommunityBoatingTracker> {
   @override
   Widget build(BuildContext context) {
     // Options for our map:
@@ -88,7 +88,74 @@ class _ScaffoldExampleState extends State<ScaffoldExample> {
             markerLayer
           ],
         );
-    
+
+
+
+    TextField hullNumberField = const TextField(
+      decoration: InputDecoration(
+        border: OutlineInputBorder(),
+        hintText: 'Hull Number',
+      ),
+    );
+    TextField emailField = const TextField(
+      decoration: InputDecoration(
+        border: OutlineInputBorder(),
+        hintText: 'Email Address',
+      ),
+      enableSuggestions: true,
+      autocorrect: true,
+      autofillHints: [AutofillHints.email],
+    );
+
+    DropdownButtonFormField activityTypeField = DropdownButtonFormField<String>(
+      decoration: const InputDecoration(
+        border: OutlineInputBorder(),
+        hintText: 'Activity Type',
+      ),
+      items: const [
+        DropdownMenuItem(
+          value: 'lesson',
+          child: Text('Lesson'),
+        ),
+        DropdownMenuItem(
+          value: 'rental',
+          child: Text('Rental'),
+        ),
+        DropdownMenuItem(
+          value: 'admin',
+          child: Text('Admin'),
+        ),
+      ],
+      onChanged: (value) {
+        // Handle the selected value here
+      },
+    );
+
+    Column bodyColumn = Column(
+        children: <Widget>[
+          Row(
+            children: <Widget>[
+              Expanded(
+                child: hullNumberField,
+              ),
+              const SizedBox(width: 10),
+              Expanded(
+                child: emailField,
+              ),
+              const SizedBox(width: 10),
+              Expanded(
+                child: activityTypeField
+              ),
+            ],
+          ),
+          const SizedBox(height: 10),
+          Expanded(
+            child: flutterMap
+          ),
+        ],
+    );
+
+
     // Location services for tracking our location:
     LocationService locationService = LocationService();
     bool tracking = false;
@@ -108,6 +175,7 @@ class _ScaffoldExampleState extends State<ScaffoldExample> {
           )
         );
         // Add our current location to the path and send to the server if tracking:
+        // ignore: avoid_print
         print("tracking: " + tracking.toString());
         if (tracking) {
           // TODO: Why is 'tracking' not being consistent?
@@ -118,16 +186,15 @@ class _ScaffoldExampleState extends State<ScaffoldExample> {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Sample Code'),
+        title: const Text('Community Boating Center Rental Tracker'),
       ),
-      body: Center(
-        child: flutterMap
-      ),
+      body: bodyColumn,
       bottomNavigationBar: BottomAppBar(
         shape: const CircularNotchedRectangle(),
+        notchMargin: -100,
         child: Container(height: 50.0),
       ),
-      floatingActionButton: FloatingActionButton.extended(  
+      floatingActionButton: FloatingActionButton.extended(
         onPressed: () => setState(() {
           tracking = !tracking;
           // Start Trip:
@@ -146,3 +213,5 @@ class _ScaffoldExampleState extends State<ScaffoldExample> {
     );
   }
 }
+
+
