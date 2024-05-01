@@ -158,9 +158,12 @@ class _CommunityBoatingTrackerState extends State<CommunityBoatingTracker> {
 
     // Location services for tracking our location:
     LocationService locationService = LocationService();
-    bool tracking = false;
+    // bool tracking = false;
+    ValueNotifier<bool> tracking = ValueNotifier<bool>(false);
+
+    // Text tripButtonText = tracking ? Text('End Trip') : Text('Start Trip');
     // Timer:
-    Timer locationTracker = Timer.periodic(const Duration(seconds: 5), (timer) async {
+    Timer locationTracker = Timer.periodic(const Duration(seconds: 30), (timer) async {
         // Get our location:
         final locationData = await locationService.getCurrentLocation();
         // center ourselves on the map:
@@ -176,9 +179,8 @@ class _CommunityBoatingTrackerState extends State<CommunityBoatingTracker> {
         );
         // Add our current location to the path and send to the server if tracking:
         // ignore: avoid_print
-        print("tracking: " + tracking.toString());
-        if (tracking) {
-          // TODO: Why is 'tracking' not being consistent?
+        // print("tracking: ${tracking.value}");
+        if (tracking.value) {
           // Send our location to the server:
           locationService.sendLocationToServer('TestID', LatLng(locationData.latitude!, locationData.longitude!));
         }
@@ -195,23 +197,16 @@ class _CommunityBoatingTrackerState extends State<CommunityBoatingTracker> {
         child: Container(height: 50.0),
       ),
       floatingActionButton: FloatingActionButton.extended(
-        onPressed: () => setState(() {
-          tracking = !tracking;
-          // Start Trip:
-          if (!tracking) {
-            // change button color and icon.
-          }
-          // End trip:
-          else {
-          }
-        }),
-        tooltip: 'Start Trip',
-        label: const Text('Start Trip'),
+        onPressed: () => tracking.value = !tracking.value,
+        tooltip: 'Before Leaving the Dock, start your trip to help us manage our fleet.',
+        // label: tracking.value ? const Text('End Trip') : const Text('Start Trip'),
+        label: ValueListenableBuilder(valueListenable: tracking, builder: (context, value, child) {
+          return value ? const Text('End Trip') : const Text('Start Trip');
+        },),
         icon: const Icon(Icons.navigation),
       ),
       floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
     );
   }
 }
-
 
