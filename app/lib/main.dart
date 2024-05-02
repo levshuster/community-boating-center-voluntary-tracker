@@ -83,6 +83,17 @@ class _CommunityBoatingTrackerState extends State<CommunityBoatingTracker> {
       urlTemplate: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
       userAgentPackageName: 'com.example.app',
     );
+    // Polyline layer
+    List<LatLng> points = [];
+    PolylineLayer polylineLayer = PolylineLayer(
+      polylines: [
+        Polyline(
+          points: points,
+          strokeWidth: 4.0,
+          color: Colors.red,
+        ),
+      ],
+    );
     // Marker layer: [<home>, <current location>]
     List<Marker> markers = [
       const Marker(
@@ -92,7 +103,6 @@ class _CommunityBoatingTrackerState extends State<CommunityBoatingTracker> {
         child: Icon(Icons.location_on, size: 50.0, color: Colors.green),
       ),
       const Marker(
-        // TODO: why is there two markers?
         width: 80.0,
         height: 80.0,
         point: LatLng(48.7216016, -122.5094043),
@@ -108,7 +118,7 @@ class _CommunityBoatingTrackerState extends State<CommunityBoatingTracker> {
     FlutterMap flutterMap = FlutterMap(
       options: mapOptions,
       mapController: MapController(),
-      children: [tileLayer, markerLayer],
+      children: [tileLayer, markerLayer, polylineLayer],
     );
 
     ValueNotifier<bool> tracking = ValueNotifier<bool>(false);
@@ -257,6 +267,8 @@ class _CommunityBoatingTrackerState extends State<CommunityBoatingTracker> {
           ));
       // Add our current location to the path and send to the server if tracking:
       if (tracking.value) {
+        // Add to our trip:
+        points.add(point);
         // Send our location to the server:
         locationService.sendLocationToServer(
             'TestID', 
