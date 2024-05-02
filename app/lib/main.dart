@@ -246,18 +246,21 @@ class _CommunityBoatingTrackerState extends State<CommunityBoatingTracker> {
       LatLng point = LatLng(locationData.latitude!, locationData.longitude!);
       flutterMap.mapController?.move(
           point,
-          flutterMap.mapController?.camera.zoom ??
-              16.0); //! Do we want to force a cameramove?
+          flutterMap.mapController?.camera.zoom ?? 16.0); //! Do we want to force a cameramove?
       // Add our current location to the map:
       markers.removeLast();
       markers.add(Marker(
           point: point,
-          child: const Icon(Icons.location_on, size: 50.0, color: Colors.red)));
+          child: const Icon(Icons.directions_boat_filled_rounded, 
+                            size: 50.0, 
+                            color: Colors.red),
+          ));
       // Add our current location to the path and send to the server if tracking:
       if (tracking.value) {
         // Send our location to the server:
         locationService.sendLocationToServer(
-            'TestID', LatLng(locationData.latitude!, locationData.longitude!));
+            'TestID', 
+            LatLng(locationData.latitude!, locationData.longitude!));
       }
     });
 
