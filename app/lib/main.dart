@@ -46,6 +46,31 @@ class CommunityBoatingTracker extends StatefulWidget {
 }
 
 class _CommunityBoatingTrackerState extends State<CommunityBoatingTracker> {
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      showDialog(
+        context: context,
+        builder: (context) {
+          return AlertDialog(
+            title: const Text('Welcome'),
+            content: const Text('Thank you for helping us keep track of our boats! Please sign in to continue. Once you launch, start your trip. When you return, end your trip. Thank you!'),
+            actions: <Widget>[
+              OutlinedButton(
+                child: const Text('Sign In'),
+                onPressed: () {
+                  Navigator.of(context).pop();
+                },
+              ),
+            ],
+          );
+        },
+      );
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     // Options for our map:
@@ -124,7 +149,6 @@ class _CommunityBoatingTrackerState extends State<CommunityBoatingTracker> {
             border: const OutlineInputBorder(),
             hintText: 'Activity Type',
             enabled: !value,
-
           ),
           items: const [
             DropdownMenuItem(
@@ -140,11 +164,42 @@ class _CommunityBoatingTrackerState extends State<CommunityBoatingTracker> {
               child: Text('Admin'),
             ),
           ],
-          onChanged: (value) {
+          onChanged: value ? null : (value) {
             // Handle the selected value here
           },
         );
       },
+    );
+
+
+    // make a help and info button
+    OutlinedButton helpAndInfoButton = OutlinedButton(
+      onPressed: () {
+      showDialog(
+        context: context,
+        builder: (BuildContext context) {
+        return AlertDialog(
+          title: const Text('Help and Info'),
+          content: const Text(
+          'This app is designed to help us manage our fleet of boats. Before you leave the dock, please start your trip. When you return, please end your trip. Thank you!'),
+          actions: <Widget>[
+          TextButton(
+            onPressed: () {
+            Navigator.of(context).pop();
+            },
+            child: const Text('Close'),
+          ),
+          ],
+        );
+        },
+      );
+      },
+      style: OutlinedButton.styleFrom(
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(5),
+      ),
+      ),
+      child: const Text('❓📞🆘'),
     );
 
     // Add padding to the column
@@ -152,19 +207,27 @@ class _CommunityBoatingTrackerState extends State<CommunityBoatingTracker> {
       padding: const EdgeInsets.symmetric(horizontal: defaultPadding),
       child: Column(
         children: <Widget>[
-          Row(
+            Row(
             children: <Widget>[
               Expanded(
-                child: hullNumberField,
+              flex: 2,
+              child: hullNumberField,
               ),
               const SizedBox(width: defaultPadding),
               Expanded(
-                child: emailField,
+              flex: 4,
+              child: emailField,
               ),
               const SizedBox(width: defaultPadding),
-              Expanded(child: activityTypeField),
+              Expanded(
+              child: activityTypeField,
+              ),
+              const SizedBox(width: defaultPadding),
+              Expanded(
+              child: helpAndInfoButton,
+              ),
             ],
-          ),
+            ),
           const SizedBox(height: defaultPadding),
           Expanded(child: flutterMap),
         ],
