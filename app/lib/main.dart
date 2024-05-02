@@ -64,13 +64,14 @@ class _CommunityBoatingTrackerState extends State<CommunityBoatingTracker> {
         width: 80.0,
         height: 80.0,
         point: LatLng(48.7216016, -122.5094043),
-        child: Icon(Icons.location_on, size: 50.0, color: Colors.red),
+        child: Icon(Icons.location_on, size: 50.0, color: Colors.green),
       ),
       const Marker(
+        // TODO: why is there two markers?
         width: 80.0,
         height: 80.0,
         point: LatLng(48.7216016, -122.5094043),
-        child: Icon(Icons.location_on, size: 50.0, color: Colors.red),
+        child: Icon(Icons.location_on, size: 50.0, color: Colors.green),
       )
     ];
 
@@ -85,43 +86,64 @@ class _CommunityBoatingTrackerState extends State<CommunityBoatingTracker> {
       children: [tileLayer, markerLayer],
     );
 
-    TextField hullNumberField = const TextField(
-      decoration: InputDecoration(
-        border: OutlineInputBorder(),
-        hintText: 'Hull Number',
-      ),
-    );
-    TextField emailField = const TextField(
-      decoration: InputDecoration(
-        border: OutlineInputBorder(),
-        hintText: 'Email Address',
-      ),
-      enableSuggestions: true,
-      autocorrect: true,
-      autofillHints: [AutofillHints.email],
+    ValueNotifier<bool> tracking = ValueNotifier<bool>(false);
+
+    ValueListenableBuilder hullNumberField = ValueListenableBuilder(
+      valueListenable: tracking,
+      builder: (context, value, child) {
+        return TextField(
+            decoration: InputDecoration(
+          border: const OutlineInputBorder(),
+          hintText: 'Hull Number',
+          enabled: !value,
+        ));
+      },
     );
 
-    DropdownButtonFormField activityTypeField = DropdownButtonFormField<String>(
-      decoration: const InputDecoration(
-        border: OutlineInputBorder(),
-        hintText: 'Activity Type',
-      ),
-      items: const [
-        DropdownMenuItem(
-          value: 'lesson',
-          child: Text('Lesson'),
-        ),
-        DropdownMenuItem(
-          value: 'rental',
-          child: Text('Rental'),
-        ),
-        DropdownMenuItem(
-          value: 'admin',
-          child: Text('Admin'),
-        ),
-      ],
-      onChanged: (value) {
-        // Handle the selected value here
+    ValueListenableBuilder emailField = ValueListenableBuilder(
+      valueListenable: tracking,
+      builder: (context, value, child) {
+        return TextField(
+          decoration: const InputDecoration(
+            border: OutlineInputBorder(),
+            hintText: 'Email Address',
+          ),
+          enableSuggestions: true,
+          autocorrect: true,
+          autofillHints: const [AutofillHints.email],
+          enabled: !value,
+        );
+      },
+    );
+
+    ValueListenableBuilder activityTypeField = ValueListenableBuilder(
+      valueListenable: tracking,
+      builder: (context, value, child) {
+        return DropdownButtonFormField<String>(
+          decoration: InputDecoration(
+            border: const OutlineInputBorder(),
+            hintText: 'Activity Type',
+            enabled: !value,
+
+          ),
+          items: const [
+            DropdownMenuItem(
+              value: 'lesson',
+              child: Text('Lesson'),
+            ),
+            DropdownMenuItem(
+              value: 'rental',
+              child: Text('Rental'),
+            ),
+            DropdownMenuItem(
+              value: 'admin',
+              child: Text('Admin'),
+            ),
+          ],
+          onChanged: (value) {
+            // Handle the selected value here
+          },
+        );
       },
     );
 
@@ -151,13 +173,10 @@ class _CommunityBoatingTrackerState extends State<CommunityBoatingTracker> {
 
     // Location services for tracking our location:
     LocationService locationService = LocationService();
-    // bool tracking = false;
-    ValueNotifier<bool> tracking = ValueNotifier<bool>(false);
 
-    // Text tripButtonText = tracking ? Text('End Trip') : Text('Start Trip');
     // Timer:
     Timer locationTracker =
-        Timer.periodic(const Duration(seconds: 30), (timer) async {
+        Timer.periodic(const Duration(seconds: 10), (timer) async {
       // Get our location:
       final locationData = await locationService.getCurrentLocation();
       // center ourselves on the map:
