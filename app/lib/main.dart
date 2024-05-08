@@ -6,6 +6,8 @@ import 'firebase_options.dart';
 import 'location_services.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:latlong2/latlong.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+
 /* Currently used in location_services.dart:
 	* import 'package:firebase_auth/firebase_auth.dart';
 	* import 'package:cloud_firestore/cloud_firestore.dart';
@@ -46,6 +48,11 @@ class CommunityBoatingTracker extends StatefulWidget {
 }
 
 class _CommunityBoatingTrackerState extends State<CommunityBoatingTracker> {
+  Future<UserCredential> signInWithGoogle() async {
+    GoogleAuthProvider googleProvider = GoogleAuthProvider();
+    UserCredential userCredential = await FirebaseAuth.instance.signInWithPopup(googleProvider);
+    return userCredential;
+  }
 
   @override
   void initState() {
@@ -59,8 +66,17 @@ class _CommunityBoatingTrackerState extends State<CommunityBoatingTracker> {
             content: const Text('Thank you for helping us keep track of our boats! Please sign in to continue. Once you launch, start your trip. When you return, end your trip. Thank you!'),
             actions: <Widget>[
               OutlinedButton(
-                child: const Text('Sign In'),
-                onPressed: () {
+                child: const Text('Sign In With Apple'),
+                onPressed: () async {
+                  // await signInWithGoogle();
+                  Navigator.of(context).pop();
+                },
+              ),
+            OutlinedButton(
+                child: const Text('Sign In With Google'),
+                onPressed: () async {
+                  await signInWithGoogle();
+                  print(FirebaseAuth.instance.currentUser?.email);
                   Navigator.of(context).pop();
                 },
               ),
@@ -70,6 +86,8 @@ class _CommunityBoatingTrackerState extends State<CommunityBoatingTracker> {
       );
     });
   }
+
+
 
   @override
   Widget build(BuildContext context) {
@@ -132,22 +150,6 @@ class _CommunityBoatingTrackerState extends State<CommunityBoatingTracker> {
           hintText: 'Hull Number',
           enabled: !value,
         ));
-      },
-    );
-
-    ValueListenableBuilder emailField = ValueListenableBuilder(
-      valueListenable: tracking,
-      builder: (context, value, child) {
-        return TextField(
-          decoration: const InputDecoration(
-            border: OutlineInputBorder(),
-            hintText: 'Email Address',
-          ),
-          enableSuggestions: true,
-          autocorrect: true,
-          autofillHints: const [AutofillHints.email],
-          enabled: !value,
-        );
       },
     );
 
@@ -224,11 +226,6 @@ class _CommunityBoatingTrackerState extends State<CommunityBoatingTracker> {
               ),
               const SizedBox(width: defaultPadding),
               Expanded(
-              flex: 4,
-              child: emailField,
-              ),
-              const SizedBox(width: defaultPadding),
-              Expanded(
               child: activityTypeField,
               ),
               const SizedBox(width: defaultPadding),
@@ -260,8 +257,8 @@ class _CommunityBoatingTrackerState extends State<CommunityBoatingTracker> {
       markers.removeLast();
       markers.add(Marker(
           point: point,
-          child: const Icon(Icons.directions_boat_filled_rounded, 
-                            size: 50.0, 
+          child: const Icon(Icons.directions_boat_filled_rounded,
+                            size: 50.0,
                             color: Colors.red),
           ));
       // Add our current location to the path and send to the server if tracking:
@@ -270,7 +267,7 @@ class _CommunityBoatingTrackerState extends State<CommunityBoatingTracker> {
         points.add(point);
         // Send our location to the server:
         locationService.sendLocationToServer(
-            'TestID', 
+            'TestID',
             LatLng(locationData.latitude!, locationData.longitude!));
       }
     });
