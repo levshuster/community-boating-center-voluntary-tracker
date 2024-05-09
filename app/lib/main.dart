@@ -1,14 +1,13 @@
 import 'dart:async';
-import 'dart:js_interop';
-import 'dart:js_util';
 
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'firebase_options.dart';
 import 'location_services.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:latlong2/latlong.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+
 /* Currently used in location_services.dart:
 	* import 'package:firebase_auth/firebase_auth.dart';
 	* import 'package:cloud_firestore/cloud_firestore.dart';
@@ -20,8 +19,8 @@ import 'package:latlong2/latlong.dart';
 	* Perhaps we can do this in the background, but for now we'll just do it here.
 */
 
-const double defaultPadding = 16;
-void main() async {
+const double defaultPadding = 16; 
+void main() async { 
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,
@@ -49,6 +48,11 @@ class CommunityBoatingTracker extends StatefulWidget {
 }
 
 class _CommunityBoatingTrackerState extends State<CommunityBoatingTracker> {
+  Future<UserCredential> signInWithGoogle() async {
+    GoogleAuthProvider googleProvider = GoogleAuthProvider();
+    UserCredential userCredential = await FirebaseAuth.instance.signInWithPopup(googleProvider);
+    return userCredential;
+  }
 
   @override
   void initState() {
@@ -62,8 +66,17 @@ class _CommunityBoatingTrackerState extends State<CommunityBoatingTracker> {
             content: const Text('Thank you for helping us keep track of our boats! Please sign in to continue. Once you launch, start your trip. When you return, end your trip. Thank you!'),
             actions: <Widget>[
               OutlinedButton(
-                child: const Text('Sign In'),
-                onPressed: () {
+                child: const Text('Sign In With Apple'),
+                onPressed: () async {
+                  // await signInWithGoogle();
+                  Navigator.of(context).pop();
+                },
+              ),
+            OutlinedButton(
+                child: const Text('Sign In With Google'),
+                onPressed: () async {
+                  await signInWithGoogle();
+                  print(FirebaseAuth.instance.currentUser?.email);
                   Navigator.of(context).pop();
                 },
               ),
@@ -73,6 +86,8 @@ class _CommunityBoatingTrackerState extends State<CommunityBoatingTracker> {
       );
     });
   }
+
+
 
   @override
   Widget build(BuildContext context) {
@@ -86,17 +101,42 @@ class _CommunityBoatingTrackerState extends State<CommunityBoatingTracker> {
       urlTemplate: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
       userAgentPackageName: 'com.example.app',
     );
-    // Marker Layer:
-    List<Marker> markers = [];
+    // Polyline layer
+    List<LatLng> points = [];
+    PolylineLayer polylineLayer = PolylineLayer(
+      polylines: [
+        Polyline(
+          points: points,
+          strokeWidth: 4.0,
+          color: Colors.red,
+        ),
+      ],
+    );
+    // Marker layer: [<home>, <current location>]
+    List<Marker> markers = [
+      const Marker(
+        width: 80.0,
+        height: 80.0,
+        point: LatLng(48.7216016, -122.5094043),
+        child: Icon(Icons.location_on, size: 50.0, color: Colors.green),
+      ),
+      const Marker(
+        width: 80.0,
+        height: 80.0,
+        point: LatLng(48.7216016, -122.5094043),
+        child: Icon(Icons.location_on, size: 50.0, color: Colors.green),
+      )
+    ];
+
+    // Marker layer represents the location we're at.
     MarkerLayer markerLayer = MarkerLayer(
       markers: markers,
     );
-
     // Map layer:
     FlutterMap flutterMap = FlutterMap(
       options: mapOptions,
       mapController: MapController(),
-      children: [tileLayer, markerLayer],
+      children: [tileLayer, markerLayer, polylineLayer],
     );
 
     ValueNotifier<bool> tracking = ValueNotifier<bool>(false);
@@ -110,22 +150,6 @@ class _CommunityBoatingTrackerState extends State<CommunityBoatingTracker> {
           hintText: 'Hull Number',
           enabled: !value,
         ));
-      },
-    );
-
-    ValueListenableBuilder emailField = ValueListenableBuilder(
-      valueListenable: tracking,
-      builder: (context, value, child) {
-        return TextField(
-          decoration: const InputDecoration(
-            border: OutlineInputBorder(),
-            hintText: 'Email Address',
-          ),
-          enableSuggestions: true,
-          autocorrect: true,
-          autofillHints: const [AutofillHints.email],
-          enabled: !value,
-        );
       },
     );
 
@@ -159,6 +183,12 @@ class _CommunityBoatingTrackerState extends State<CommunityBoatingTracker> {
       },
     );
 
+
+    Future<void> signOut() async {
+      await FirebaseAuth.instance.signOut();
+      Navigator.of(context).pushNamedAndRemoveUntil('/', (Route<dynamic> route) => false);
+    }
+
     // make a help and info button
     OutlinedButton helpAndInfoButton = OutlinedButton(
       onPressed: () {
@@ -169,14 +199,20 @@ class _CommunityBoatingTrackerState extends State<CommunityBoatingTracker> {
           title: const Text('Help and Info'),
           content: const Text(
           'This app is designed to help us manage our fleet of boats. Before you leave the dock, please start your trip. When you return, please end your trip. Thank you!'),
-          actions: <Widget>[
-          TextButton(
-            onPressed: () {
-            Navigator.of(context).pop();
-            },
-            child: const Text('Close'),
-          ),
-          ],
+            actions: <Widget>[
+            TextButton(
+              onPressed: () {
+              Navigator.of(context).pop();
+              },
+              child: const Text('Close'),
+            ),
+            TextButton(
+              onPressed: () {
+              signOut();
+              },
+              child: const Text('Sign Out'),
+            ),
+            ],
         );
         },
       );
@@ -202,11 +238,6 @@ class _CommunityBoatingTrackerState extends State<CommunityBoatingTracker> {
               ),
               const SizedBox(width: defaultPadding),
               Expanded(
-              flex: 4,
-              child: emailField,
-              ),
-              const SizedBox(width: defaultPadding),
-              Expanded(
               child: activityTypeField,
               ),
               const SizedBox(width: defaultPadding),
@@ -221,44 +252,36 @@ class _CommunityBoatingTrackerState extends State<CommunityBoatingTracker> {
       ),
     );
 
-    //! Timer:
-    Timer locationTracker = Timer.periodic(const Duration(seconds: 10), (timer) async {
+    // Location services for tracking our location:
+    LocationService locationService = LocationService();
+
+    // Timer:
+    Timer locationTracker =
+        Timer.periodic(const Duration(seconds: 10), (timer) async {
+      // Get our location:
+      final locationData = await locationService.getCurrentLocation();
+      // center ourselves on the map:
+      LatLng point = LatLng(locationData.latitude!, locationData.longitude!);
+      flutterMap.mapController?.move(
+          point,
+          flutterMap.mapController?.camera.zoom ?? 16.0); //! Do we want to force a cameramove?
       // Add our current location to the map:
-      markers.removeWhere((element) => true);
-
-      // Pull all location data in the last 20 minutes from the firebase server:
-      FirebaseFirestore firestore = FirebaseFirestore.instance;
-      Timestamp twentyMinutesAgo = Timestamp.fromDate(
-        Timestamp
-          .now()
-          .toDate()
-          .subtract(const Duration(minutes: 20)));
-
-      QuerySnapshot querySnapshot = await firestore
-        .collection('Location') 
-        .where('timestamp', isGreaterThan: twentyMinutesAgo)
-        .orderBy('timestamp', descending: true)
-        .get(); 
-            
-      // From this query snapshot, get each unique most recent marker:
-      var temp_ids = <String>[];
-      querySnapshot.docs.forEach((element) {
-        var data = element.data() as Map<String, dynamic>;
-        GeoPoint location = data['location'];
-
-        if (!temp_ids.contains(data['id'])) {
-          temp_ids.add(data['id']);
-        //   markers.add(Marker(
-        //     width: 80.0,
-        //     height: 80.0,
-        //     point: LatLng(location.latitude, location.longitude),
-        //     child: const Icon(Icons.directions_boat_filled_rounded, color: Colors.red),
-        //   ));
-        }
-
-      });
-
-
+      markers.removeLast();
+      markers.add(Marker(
+          point: point,
+          child: const Icon(Icons.directions_boat_filled_rounded,
+                            size: 50.0,
+                            color: Colors.red),
+          ));
+      // Add our current location to the path and send to the server if tracking:
+      if (tracking.value) {
+        // Add to our trip:
+        points.add(point);
+        // Send our location to the server:
+        locationService.sendLocationToServer(
+            'TestID',
+            LatLng(locationData.latitude!, locationData.longitude!));
+      }
     });
 
     return Scaffold(
@@ -266,6 +289,11 @@ class _CommunityBoatingTrackerState extends State<CommunityBoatingTracker> {
         title: const Text('Community Boating Center Rental Tracker'),
       ),
       body: bodyColumn,
+      // bottomNavigationBar: BottomAppBar(
+      //   shape: const CircularNotchedRectangle(),
+      //   notchMargin: -100,
+      //   child: Container(height: 20.0),
+      // ),
       floatingActionButton: Container(
         margin: const EdgeInsets.only(bottom: defaultPadding),
         child: FloatingActionButton.extended(
