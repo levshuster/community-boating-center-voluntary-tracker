@@ -17,8 +17,8 @@ import 'package:latlong2/latlong.dart';
 	* Perhaps we can do this in the background, but for now we'll just do it here.
 */
 
-const double defaultPadding = 16;
-void main() async {
+const double defaultPadding = 16; 
+void main() async { 
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,

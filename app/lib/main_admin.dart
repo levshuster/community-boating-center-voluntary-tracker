@@ -226,14 +226,19 @@ class _CommunityBoatingTrackerState extends State<CommunityBoatingTracker> {
 
       // Pull all location data in the last 20 minutes from the firebase server:
       FirebaseFirestore firestore = FirebaseFirestore.instance;
-      QuerySnapshot querySnapshot = await firestore
-        .collection('Location')
-        .where('timestamp', isGreaterThan: Timestamp
+      Timestamp twentyMinutesAgo = Timestamp.fromDate(
+        Timestamp
           .now()
           .toDate()
-          .subtract(const Duration(minutes: 20)))
-          .orderBy('timestamp', descending: true) // TODO: WHY DON'T YOU WORK?
-        .get();
+          .subtract(const Duration(minutes: 20)));
+
+      QuerySnapshot querySnapshot = await firestore
+        .collection('Location') 
+        .where('timestamp', isGreaterThan: twentyMinutesAgo)
+        .orderBy('timestamp', descending: true)
+        .get(); 
+      
+      print(querySnapshot.docs);
       
       // From this query snapshot, get each unique most recent marker:
       List<String> temp_ids = [];
@@ -241,7 +246,7 @@ class _CommunityBoatingTrackerState extends State<CommunityBoatingTracker> {
         LatLng point = LatLng(element['location'].latitude, element['location'].longitude);
         String id = element["user_id"];
         // String id = element['user_id'] + element['boat_id']; // TODO: This might break lmao
-
+        print(id);
         // Check if we have a marker for this user already:
         if (!temp_ids.contains(id)) {
           markers.add(Marker(
