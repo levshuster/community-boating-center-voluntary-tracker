@@ -153,6 +153,8 @@ class _CommunityBoatingTrackerState extends State<CommunityBoatingTracker> {
       },
     );
 
+    String? activityType;
+
     ValueListenableBuilder activityTypeField = ValueListenableBuilder(
       valueListenable: tracking,
       builder: (context, value, child) {
@@ -177,6 +179,9 @@ class _CommunityBoatingTrackerState extends State<CommunityBoatingTracker> {
             ),
           ],
           onChanged: value ? null : (value) {
+            if (value != null) {
+              activityType = value.toLowerCase();
+            } 
             // Handle the selected value here
           },
         );
@@ -280,7 +285,8 @@ class _CommunityBoatingTrackerState extends State<CommunityBoatingTracker> {
         // Send our location to the server:
         locationService.sendLocationToServer(
             FirebaseAuth.instance.currentUser?.uid ?? 'unknown',
-            LatLng(locationData.latitude!, locationData.longitude!));
+            LatLng(locationData.latitude!, locationData.longitude!),
+            activityType ?? 'unknown');
       }
     });
 

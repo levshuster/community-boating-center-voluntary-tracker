@@ -26,12 +26,13 @@ class LocationService {
   return locationData;
   }
 
-  void sendLocationToServer(String id, LatLng locDat) async {
+  void sendLocationToServer(String id, LatLng locDat, String activityType) async {
     //* Get our location, then send it to our database:
       Map<String, dynamic> test = {
         'location': GeoPoint(locDat.latitude, locDat.longitude),
         'timestamp': FieldValue.serverTimestamp(),
-        'user': id
+        'user': id,
+        'activity': activityType
       };
       FirebaseFirestore.instance.collection('Location')
           .add(test)

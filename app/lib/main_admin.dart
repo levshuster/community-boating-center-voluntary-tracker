@@ -221,6 +221,14 @@ class _CommunityBoatingTrackerState extends State<CommunityBoatingTracker> {
       ),
     );
 
+    const Map<String, Color> swatches = {
+      'instructor': Colors.red,
+      'student': Colors.orange,
+      'rental': Colors.purple,
+      'unknown': Colors.yellow,
+      'admin': Colors.yellow,
+    };
+
     //! Timer:
     Timer locationTracker = Timer.periodic(const Duration(seconds: 10), (timer) async {
       // Add our current location to the map:
@@ -245,13 +253,15 @@ class _CommunityBoatingTrackerState extends State<CommunityBoatingTracker> {
       querySnapshot.docs.forEach((element) {
         var data = element.data() as Map<String, dynamic>;
         GeoPoint location = data['location'];
+        Color color = swatches[data['activity']]!;
+
         if (!temp_ids.contains(data['user'])) {
           temp_ids.add(data['user']);
           markers.add(Marker(
             width: 80.0,
             height: 80.0,
             point: LatLng(location.latitude, location.longitude),
-            child: const Icon(Icons.directions_boat_filled_rounded, color: Colors.red), // TODO: Change this color based on activity type
+            child: Icon(Icons.directions_boat_filled_rounded, color: color), // TODO: Change this color based on activity type
             // TODO: add either a popup with location data or a tooltip with location data
           ));
         }
