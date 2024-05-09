@@ -19,8 +19,8 @@ import 'package:firebase_auth/firebase_auth.dart';
 	* Perhaps we can do this in the background, but for now we'll just do it here.
 */
 
-const double defaultPadding = 16; 
-void main() async { 
+const double defaultPadding = 16;
+void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,
@@ -279,7 +279,7 @@ class _CommunityBoatingTrackerState extends State<CommunityBoatingTracker> {
         points.add(point);
         // Send our location to the server:
         locationService.sendLocationToServer(
-            'TestID',
+            FirebaseAuth.instance.currentUser?.uid ?? 'unknown',
             LatLng(locationData.latitude!, locationData.longitude!));
       }
     });

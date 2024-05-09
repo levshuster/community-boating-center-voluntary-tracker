@@ -1,6 +1,25 @@
 # app
 
-A new Flutter project.
+A Flutter project.
+
+## File Structure
+
+```bash
+./lib/pubspec.yaml
+	- Dependencies
+./lib/main.dart
+	- Load the main app
+	- Set up Firebase
+	- Load the log in pop-up
+	- Check if uid in admin database
+	- load public_view.dart or admin_view.dart
+./lib/public_view.dart
+	- Load the public view
+./lib/admin_view.dart
+	- Load the admin view
+./lib/shared_view_widgets.dart
+	- Shared widgets across admin_view.dart and public_view.dart
+```
 
 ## Getting Started
 
