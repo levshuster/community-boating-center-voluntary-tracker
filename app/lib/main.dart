@@ -183,6 +183,12 @@ class _CommunityBoatingTrackerState extends State<CommunityBoatingTracker> {
       },
     );
 
+
+    Future<void> signOut() async {
+      await FirebaseAuth.instance.signOut();
+      Navigator.of(context).pushNamedAndRemoveUntil('/', (Route<dynamic> route) => false);
+    }
+
     // make a help and info button
     OutlinedButton helpAndInfoButton = OutlinedButton(
       onPressed: () {
@@ -193,14 +199,20 @@ class _CommunityBoatingTrackerState extends State<CommunityBoatingTracker> {
           title: const Text('Help and Info'),
           content: const Text(
           'This app is designed to help us manage our fleet of boats. Before you leave the dock, please start your trip. When you return, please end your trip. Thank you!'),
-          actions: <Widget>[
-          TextButton(
-            onPressed: () {
-            Navigator.of(context).pop();
-            },
-            child: const Text('Close'),
-          ),
-          ],
+            actions: <Widget>[
+            TextButton(
+              onPressed: () {
+              Navigator.of(context).pop();
+              },
+              child: const Text('Close'),
+            ),
+            TextButton(
+              onPressed: () {
+              signOut();
+              },
+              child: const Text('Sign Out'),
+            ),
+            ],
         );
         },
       );
