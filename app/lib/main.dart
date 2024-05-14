@@ -7,6 +7,8 @@ import 'location_services.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:latlong2/latlong.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'components.dart';
+import 'login.dart';
 
 /* Currently used in location_services.dart:
 	* import 'package:firebase_auth/firebase_auth.dart';
@@ -19,7 +21,6 @@ import 'package:firebase_auth/firebase_auth.dart';
 	* Perhaps we can do this in the background, but for now we'll just do it here.
 */
 
-const double defaultPadding = 16;
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp(
@@ -30,7 +31,6 @@ void main() async {
 
 class CommunityBoatingTrackerApp extends StatelessWidget {
   const CommunityBoatingTrackerApp({super.key});
-
   @override
   Widget build(BuildContext context) {
     return const MaterialApp(
@@ -48,12 +48,6 @@ class CommunityBoatingTracker extends StatefulWidget {
 }
 
 class _CommunityBoatingTrackerState extends State<CommunityBoatingTracker> {
-  Future<UserCredential> signInWithGoogle() async {
-    GoogleAuthProvider googleProvider = GoogleAuthProvider();
-    UserCredential userCredential = await FirebaseAuth.instance.signInWithPopup(googleProvider);
-    return userCredential;
-  }
-
   @override
   void initState() {
     super.initState();
@@ -61,58 +55,14 @@ class _CommunityBoatingTrackerState extends State<CommunityBoatingTracker> {
       showDialog(
         context: context,
         builder: (context) {
-          return AlertDialog(
-            title: const Text('Welcome'),
-            content: const Text('Thank you for helping us keep track of our boats! Please sign in to continue. Once you launch, start your trip. When you return, end your trip. Thank you!'),
-            actions: <Widget>[
-              OutlinedButton(
-                child: const Text('Sign In With Apple'),
-                onPressed: () async {
-                  // await signInWithGoogle();
-                  Navigator.of(context).pop();
-                },
-              ),
-            OutlinedButton(
-                child: const Text('Sign In With Google'),
-                onPressed: () async {
-                  await signInWithGoogle();
-                  print(FirebaseAuth.instance.currentUser?.email);
-                  Navigator.of(context).pop();
-                },
-              ),
-            ],
-          );
+          return buildWelcomeDialog(context);
         },
       );
     });
   }
 
-
-
   @override
   Widget build(BuildContext context) {
-    // Options for our map:
-    const MapOptions mapOptions = MapOptions(
-      initialCenter: LatLng(48.7250079, -122.5128632),
-      initialZoom: 16.0,
-    );
-    // Tile layer represents the map we're using.
-    TileLayer tileLayer = TileLayer(
-      urlTemplate: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
-      userAgentPackageName: 'com.example.app',
-    );
-    // Polyline layer
-    List<LatLng> points = [];
-    PolylineLayer polylineLayer = PolylineLayer(
-      polylines: [
-        Polyline(
-          points: points,
-          strokeWidth: 4.0,
-          color: Colors.red,
-        ),
-      ],
-    );
-    // Marker layer: [<home>, <current location>]
     List<Marker> markers = [
       const Marker(
         width: 80.0,
@@ -132,6 +82,7 @@ class _CommunityBoatingTrackerState extends State<CommunityBoatingTracker> {
     MarkerLayer markerLayer = MarkerLayer(
       markers: markers,
     );
+
     // Map layer:
     FlutterMap flutterMap = FlutterMap(
       options: mapOptions,
@@ -178,54 +129,50 @@ class _CommunityBoatingTrackerState extends State<CommunityBoatingTracker> {
               child: Text('Admin'),
             ),
           ],
-          onChanged: value ? null : (value) {
-            if (value != null) {
-              activityType = value.toLowerCase();
-            } 
-            // Handle the selected value here
-          },
+          onChanged: value
+              ? null
+              : (value) {
+                  if (value != null) {
+                    activityType = value.toLowerCase();
+                  }
+                  // Handle the selected value here
+                },
         );
       },
     );
 
-
-    Future<void> signOut() async {
-      await FirebaseAuth.instance.signOut();
-      Navigator.of(context).pushNamedAndRemoveUntil('/', (Route<dynamic> route) => false);
-    }
-
     // make a help and info button
     OutlinedButton helpAndInfoButton = OutlinedButton(
       onPressed: () {
-      showDialog(
-        context: context,
-        builder: (BuildContext context) {
-        return AlertDialog(
-          title: const Text('Help and Info'),
-          content: const Text(
-          'This app is designed to help us manage our fleet of boats. Before you leave the dock, please start your trip. When you return, please end your trip. Thank you!'),
-            actions: <Widget>[
-            TextButton(
-              onPressed: () {
-              Navigator.of(context).pop();
-              },
-              child: const Text('Close'),
-            ),
-            TextButton(
-              onPressed: () {
-              signOut();
-              },
-              child: const Text('Sign Out'),
-            ),
-            ],
+        showDialog(
+          context: context,
+          builder: (BuildContext context) {
+            return AlertDialog(
+              title: const Text('Help and Info'),
+              content: const Text(
+                  'This app is designed to help us manage our fleet of boats. Before you leave the dock, please start your trip. When you return, please end your trip. Thank you!'),
+              actions: <Widget>[
+                TextButton(
+                  onPressed: () {
+                    Navigator.of(context).pop();
+                  },
+                  child: const Text('Close'),
+                ),
+                TextButton(
+                  onPressed: () {
+                    signOut(context);
+                  },
+                  child: const Text('Sign Out'),
+                ),
+              ],
+            );
+          },
         );
-        },
-      );
       },
       style: OutlinedButton.styleFrom(
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(5),
-      ),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(5),
+        ),
       ),
       child: const Text('❓📞🆘'),
     );
@@ -235,22 +182,22 @@ class _CommunityBoatingTrackerState extends State<CommunityBoatingTracker> {
       padding: const EdgeInsets.symmetric(horizontal: defaultPadding),
       child: Column(
         children: <Widget>[
-            Row(
+          Row(
             children: <Widget>[
               Expanded(
-              flex: 2,
-              child: hullNumberField,
+                flex: 2,
+                child: hullNumberField,
               ),
               const SizedBox(width: defaultPadding),
               Expanded(
-              child: activityTypeField,
+                child: activityTypeField,
               ),
               const SizedBox(width: defaultPadding),
               Expanded(
-              child: helpAndInfoButton,
+                child: helpAndInfoButton,
               ),
             ],
-            ),
+          ),
           const SizedBox(height: defaultPadding),
           Expanded(child: flutterMap),
         ],
@@ -269,15 +216,15 @@ class _CommunityBoatingTrackerState extends State<CommunityBoatingTracker> {
       LatLng point = LatLng(locationData.latitude!, locationData.longitude!);
       flutterMap.mapController?.move(
           point,
-          flutterMap.mapController?.camera.zoom ?? 16.0); //! Do we want to force a cameramove?
+          flutterMap.mapController?.camera.zoom ??
+              16.0); //! Do we want to force a cameramove?
       // Add our current location to the map:
       markers.removeLast();
       markers.add(Marker(
-          point: point,
-          child: const Icon(Icons.directions_boat_filled_rounded,
-                            size: 50.0,
-                            color: Colors.red),
-          ));
+        point: point,
+        child: const Icon(Icons.directions_boat_filled_rounded,
+            size: 50.0, color: Colors.red),
+      ));
       // Add our current location to the path and send to the server if tracking:
       if (tracking.value) {
         // Add to our trip:

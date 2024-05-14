@@ -17,8 +17,10 @@ A Flutter project.
 	- Load the public view
 ./lib/admin_view.dart
 	- Load the admin view
-./lib/shared_view_widgets.dart
+./lib/components.dart
 	- Shared widgets across admin_view.dart and public_view.dart
+./lib/login.dart
+	- Load the login pop-up
 ```
 
 ## Getting Started
@@ -33,3 +35,11 @@ A few resources to get you started if this is your first Flutter project:
 For help getting started with Flutter development, view the
 [online documentation](https://docs.flutter.dev/), which offers tutorials,
 samples, guidance on mobile development, and a full API reference.
+
+## Dev Hosting
+
+To allow other to view the hot-reloading demo, set up ngrok and run a command l ike
+
+```bash
+ngrok http --domain=shark-learning-fawn.ngrok-free.app 58644
+```

@@ -9,6 +9,8 @@ import 'firebase_options.dart';
 import 'location_services.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:latlong2/latlong.dart';
+import 'components.dart';
+
 /* Currently used in location_services.dart:
 	* import 'package:firebase_auth/firebase_auth.dart';
 	* import 'package:cloud_firestore/cloud_firestore.dart';
@@ -20,7 +22,6 @@ import 'package:latlong2/latlong.dart';
 	* Perhaps we can do this in the background, but for now we'll just do it here.
 */
 
-const double defaultPadding = 16;
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp(
@@ -76,16 +77,6 @@ class _CommunityBoatingTrackerState extends State<CommunityBoatingTracker> {
 
   @override
   Widget build(BuildContext context) {
-    // Options for our map:
-    const MapOptions mapOptions = MapOptions(
-      initialCenter: LatLng(48.7250079, -122.5128632),
-      initialZoom: 16.0,
-    );
-    // Tile layer represents the map we're using.
-    TileLayer tileLayer = TileLayer(
-      urlTemplate: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
-      userAgentPackageName: 'com.example.app',
-    );
     // Marker Layer:
     List<Marker> markers = [];
     MarkerLayer markerLayer = MarkerLayer(
@@ -243,11 +234,11 @@ class _CommunityBoatingTrackerState extends State<CommunityBoatingTracker> {
           .subtract(const Duration(minutes: 20)));
 
       QuerySnapshot querySnapshot = await firestore
-        .collection('Location') 
+        .collection('Location')
         .where('timestamp', isGreaterThan: twentyMinutesAgo)
         .orderBy('timestamp', descending: true)
-        .get(); 
-            
+        .get();
+
       // From this query snapshot, get each unique most recent marker:
       var temp_ids = <String>[];
       querySnapshot.docs.forEach((element) {
