@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:js_interop';
 import 'dart:js_util';
 
+import 'package:app/main.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -9,8 +10,6 @@ import 'firebase_options.dart';
 import 'location_services.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:latlong2/latlong.dart';
-import 'components.dart';
-
 /* Currently used in location_services.dart:
 	* import 'package:firebase_auth/firebase_auth.dart';
 	* import 'package:cloud_firestore/cloud_firestore.dart';
@@ -22,16 +21,17 @@ import 'components.dart';
 	* Perhaps we can do this in the background, but for now we'll just do it here.
 */
 
+const double defaultPaddingLocal = 16;
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,
   );
-  runApp(const CommunityBoatingTrackerApp());
+  runApp(const CommunityBoatingViewerApp());
 }
 
-class CommunityBoatingTrackerApp extends StatelessWidget {
-  const CommunityBoatingTrackerApp({super.key});
+class CommunityBoatingViewerApp extends StatelessWidget {
+  const CommunityBoatingViewerApp({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -77,6 +77,16 @@ class _CommunityBoatingTrackerState extends State<CommunityBoatingTracker> {
 
   @override
   Widget build(BuildContext context) {
+    // Options for our map:
+    const MapOptions mapOptions = MapOptions(
+      initialCenter: LatLng(48.7250079, -122.5128632),
+      initialZoom: 16.0,
+    );
+    // Tile layer represents the map we're using.
+    TileLayer tileLayer = TileLayer(
+      urlTemplate: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
+      userAgentPackageName: 'com.example.app',
+    );
     // Marker Layer:
     List<Marker> markers = [];
     MarkerLayer markerLayer = MarkerLayer(
@@ -167,6 +177,17 @@ class _CommunityBoatingTrackerState extends State<CommunityBoatingTracker> {
             },
             child: const Text('Close'),
           ),
+          TextButton(
+                  child: const Text('View Tracker Map'),
+                  onPressed: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                          builder: (context) => const CommunityBoatingTrackerApp()),
+                    );
+                    // Navigator.pushNamed(context, '/admin');
+                  },
+                ),
           ],
         );
         },
@@ -182,7 +203,7 @@ class _CommunityBoatingTrackerState extends State<CommunityBoatingTracker> {
 
     // Add padding to the column
     Padding bodyColumn = Padding(
-      padding: const EdgeInsets.symmetric(horizontal: defaultPadding),
+      padding: const EdgeInsets.symmetric(horizontal: defaultPaddingLocal),
       child: Column(
         children: <Widget>[
             Row(
@@ -191,22 +212,22 @@ class _CommunityBoatingTrackerState extends State<CommunityBoatingTracker> {
               flex: 2,
               child: hullNumberField,
               ),
-              const SizedBox(width: defaultPadding),
+              const SizedBox(width: defaultPaddingLocal),
               Expanded(
               flex: 4,
               child: emailField,
               ),
-              const SizedBox(width: defaultPadding),
+              const SizedBox(width: defaultPaddingLocal),
               Expanded(
               child: activityTypeField,
               ),
-              const SizedBox(width: defaultPadding),
+              const SizedBox(width: defaultPaddingLocal),
               Expanded(
               child: helpAndInfoButton,
               ),
             ],
             ),
-          const SizedBox(height: defaultPadding),
+          const SizedBox(height: defaultPaddingLocal),
           Expanded(child: flutterMap),
         ],
       ),
@@ -268,7 +289,7 @@ class _CommunityBoatingTrackerState extends State<CommunityBoatingTracker> {
       ),
       body: bodyColumn,
       floatingActionButton: Container(
-        margin: const EdgeInsets.only(bottom: defaultPadding),
+        margin: const EdgeInsets.only(bottom: defaultPaddingLocal),
         child: FloatingActionButton.extended(
           onPressed: () => tracking.value = !tracking.value,
           tooltip:

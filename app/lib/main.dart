@@ -9,6 +9,7 @@ import 'package:latlong2/latlong.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'components.dart';
 import 'login.dart';
+import 'main_admin.dart';
 
 /* Currently used in location_services.dart:
 	* import 'package:firebase_auth/firebase_auth.dart';
@@ -34,8 +35,8 @@ class CommunityBoatingTrackerApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return const MaterialApp(
-      home: CommunityBoatingTracker(),
-    );
+        home: CommunityBoatingTracker(),
+        title: 'Community Boating Center Tracker');
   }
 }
 
@@ -164,6 +165,17 @@ class _CommunityBoatingTrackerState extends State<CommunityBoatingTracker> {
                   },
                   child: const Text('Sign Out'),
                 ),
+                TextButton(
+                  child: const Text('View Admin Map'),
+                  onPressed: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                          builder: (context) => const CommunityBoatingViewerApp()),
+                    );
+                    // Navigator.pushNamed(context, '/admin');
+                  },
+                )
               ],
             );
           },
